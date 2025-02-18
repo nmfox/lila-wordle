@@ -7,21 +7,25 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         input { text-transform: uppercase; }
+        .correct { color: green; }
+        .present { color: orange; }
+        .absent { color: gray; }
     </style>
 </head>
 <body>
     <h2>Daily Wordle</h2>
-    <input type="text" id="guess" maxlength="5" placeholder="Enter 5-letter word">
+    <input type="text" id="guess" maxlength="5" placeholder="Enter 5-letter word" oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '')">
     <button onclick="checkGuess()">Submit</button>
     <div id="attempts"></div>
     <p id="message"></p>
+    <button id="shareButton" style="display:none;" onclick="shareResult()">Share</button>
 
     <script>
         async function fetchWords() {
-    const response = await fetch("https://raw.githubusercontent.com/nmfox/lila-wordle/refs/heads/main/words.txt"); // Replace with your actual URL
-    const text = await response.text();
-    return text.split("\n").map(word => word.trim()).filter(word => word.length === 5);
-}
+            const response = await fetch("https://raw.githubusercontent.com/nmfox/lila-wordle/refs/heads/main/words.txt"); // Replace with your actual URL
+            const text = await response.text();
+            return text.split("\n").map(word => word.trim()).filter(word => word.length === 5);
+        }
 
         async function getDailyWord() {
             const words = await fetchWords();
@@ -34,30 +38,51 @@
         let attempts = [];
         const maxAttempts = 6;
 
-        getDailyWord().then(word => dailyWord = word);
+        getDailyWord().then(word => {
+            dailyWord = word;
+            console.log("Daily word:", dailyWord); // Log the daily word for debugging
+        });
 
         function checkGuess() {
             const input = document.getElementById("guess").value.toLowerCase();
+            console.log("User guess:", input); // Log the user's guess for debugging
             if (input.length !== 5 || attempts.length >= maxAttempts) return;
-            
+
             let result = "";
             for (let i = 0; i < 5; i++) {
                 if (input[i] === dailyWord[i]) {
-                    result += `<span style='color: green;'>${input[i]}</span>`;
+                    result += `<span class='correct'>${input[i]}</span>`;
                 } else if (dailyWord.includes(input[i])) {
-                    result += `<span style='color: orange;'>${input[i]}</span>`;
+                    result += `<span class='present'>${input[i]}</span>`;
                 } else {
-                    result += `<span style='color: gray;'>${input[i]}</span>`;
+                    result += `<span class='absent'>${input[i]}</span>`;
                 }
             }
-            
+
             attempts.push(result);
             document.getElementById("attempts").innerHTML = attempts.join("<br>");
-            
+            document.getElementById("guess").value = ""; // Clear input field
+
             if (input === dailyWord) {
                 document.getElementById("message").innerText = "You Win!";
+                document.getElementById("shareButton").style.display = "block"; // Show share button
             } else if (attempts.length >= maxAttempts) {
                 document.getElementById("message").innerText = `Game Over! The word was: ${dailyWord}`;
+            }
+        }
+
+        function shareResult() {
+            const message = `I won the Lila Wordle! It took me ${attempts.length} attempts.`;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Daily Wordle',
+                    text: message,
+                    url: window.location.href
+                }).then(() => {
+                    console.log('Thanks for sharing!');
+                }).catch(console.error);
+            } else {
+                alert('Sharing is not supported in this browser.');
             }
         }
     </script>
