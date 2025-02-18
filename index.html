@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Wordle</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        input { text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <h2>Daily Wordle</h2>
+    <input type="text" id="guess" maxlength="5" placeholder="Enter 5-letter word">
+    <button onclick="checkGuess()">Submit</button>
+    <div id="attempts"></div>
+    <p id="message"></p>
+
+    <script>
+        async function fetchWords() {
+            const response = await fetch("https://example.com/words.json"); // Replace with actual URL
+            const words = await response.json();
+            return words;
+        }
+
+        async function getDailyWord() {
+            const words = await fetchWords();
+            const date = new Date();
+            const dayIndex = date.getDate() % words.length;
+            return words[dayIndex];
+        }
+
+        let dailyWord;
+        let attempts = [];
+        const maxAttempts = 6;
+
+        getDailyWord().then(word => dailyWord = word);
+
+        function checkGuess() {
+            const input = document.getElementById("guess").value.toLowerCase();
+            if (input.length !== 5 || attempts.length >= maxAttempts) return;
+            
+            let result = "";
+            for (let i = 0; i < 5; i++) {
+                if (input[i] === dailyWord[i]) {
+                    result += `<span style='color: green;'>${input[i]}</span>`;
+                } else if (dailyWord.includes(input[i])) {
+                    result += `<span style='color: orange;'>${input[i]}</span>`;
+                } else {
+                    result += `<span style='color: gray;'>${input[i]}</span>`;
+                }
+            }
+            
+            attempts.push(result);
+            document.getElementById("attempts").innerHTML = attempts.join("<br>");
+            
+            if (input === dailyWord) {
+                document.getElementById("message").innerText = "You Win!";
+            } else if (attempts.length >= maxAttempts) {
+                document.getElementById("message").innerText = `Game Over! The word was: ${dailyWord}`;
+            }
+        }
+    </script>
+</body>
+</html>
