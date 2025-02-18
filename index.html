@@ -7,9 +7,11 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         input { text-transform: uppercase; }
-        .correct { color: green; }
-        .present { color: orange; }
-        .absent { color: gray; }
+        .letter-box { display: inline-block; width: 30px; height: 30px; line-height: 30px; margin: 2px; text-align: center; color: white; font-weight: bold; }
+        .correct { background-color: green; }
+        .present { background-color: orange; }
+        .absent { background-color: gray; }
+        #shareButton { display: none; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -18,7 +20,7 @@
     <button onclick="checkGuess()">Submit</button>
     <div id="attempts"></div>
     <p id="message"></p>
-    <button id="shareButton" style="display:none;" onclick="shareResult()">Share</button>
+    <button id="shareButton" onclick="shareResult()">Text your friends!</button>
 
     <script>
         async function fetchWords() {
@@ -51,11 +53,11 @@
             let result = "";
             for (let i = 0; i < 5; i++) {
                 if (input[i] === dailyWord[i]) {
-                    result += `<span class='correct'>${input[i]}</span>`;
+                    result += `<span class='letter-box correct'>${input[i]}</span>`;
                 } else if (dailyWord.includes(input[i])) {
-                    result += `<span class='present'>${input[i]}</span>`;
+                    result += `<span class='letter-box present'>${input[i]}</span>`;
                 } else {
-                    result += `<span class='absent'>${input[i]}</span>`;
+                    result += `<span class='letter-box absent'>${input[i]}</span>`;
                 }
             }
 
@@ -72,7 +74,7 @@
         }
 
         function shareResult() {
-            const message = `I won the Lila Wordle! It took me ${attempts.length} attempts.`;
+            const message = `I won the Daily Wordle! It took me ${attempts.length} attempts.`;
             if (navigator.share) {
                 navigator.share({
                     title: 'Daily Wordle',
